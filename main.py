@@ -30,3 +30,4 @@ titles.replace('\\N', pd.NA, inplace=True)
 
 print(titles.shape)
 print(titles.head())
+titles.to_csv('cleanedTitles.csv')
