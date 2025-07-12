@@ -3,7 +3,7 @@ import pandas as pd
 import torch
 from torch import nn
 # seperate into train and teast
-titles = pd.read_csv('cleanedTitles.csv')
+titles = pd.read_csv('../data/cleanedTitles.csv')
 titles['split'] = np.random.randn(titles.shape[0],1)
 mask = np.random.rand(len(titles)) <= 0.8
 train = titles[mask]
