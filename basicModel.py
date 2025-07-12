@@ -2,9 +2,13 @@ import numpy as np
 import pandas as pd
 import torch
 from torch import nn
+<<<<<<< HEAD
 from sklearn.preprocessing import StandardScaler
 
 # Load and split data
+=======
+# seperate into train and teast
+>>>>>>> 122ed3d15d91a992b099d1ac54c1a13aabae55f8
 titles = pd.read_csv('../data/cleanedTitles.csv')
 titles['split'] = np.random.randn(titles.shape[0],1)
 mask = np.random.rand(len(titles)) <= 0.8
