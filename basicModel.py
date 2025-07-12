@@ -66,7 +66,7 @@ criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
-epochs = 350
+epochs = 300
 for epoch in range(epochs):
     model.train()
     optimizer.zero_grad()
