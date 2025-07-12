@@ -2,45 +2,57 @@ import numpy as np
 import pandas as pd
 import torch
 from torch import nn
-# seperate into train and teast
-titles = pd.read_csv('cleanedTitles.csv')
+from sklearn.preprocessing import StandardScaler
+
+# Load and split data
+titles = pd.read_csv('../data/cleanedTitles.csv')
 titles['split'] = np.random.randn(titles.shape[0],1)
 mask = np.random.rand(len(titles)) <= 0.8
-train = titles[mask]
-test = titles[~mask]
+train = titles[mask].copy()
+test = titles[~mask].copy()
 print("Train shape:", train.shape)
 print("Test shape:", test.shape)
 
-# seperate inputs and outputs
-#trainIns = train[['numVotes','directors','writers','titleType','primaryTitle','startYear','runtimeMinutes','genres']]
-#trainOuts = train[['averageRating']]
-#testIns = test[['numVotes','directors','writers','titleType','primaryTitle','startYear','runtimeMinutes','genres']]
-#testOuts = test[['averageRating']]
-## ^above is pointless until we start using feed-forward, but will be useful later
-
-#basicLinear = nn.Linear(in_features = 8, out_features = 1)
 # Columns to use
-features = ['numVotes','directors','writers','titleType','startYear','runtimeMinutes','genres']
+features = ['primaryTitle', 'numVotes', 'directors','writers','titleType','startYear','runtimeMinutes','genres']
 
 # Label encode categorical columns
-for col in ['directors', 'writers', 'titleType', 'genres']:
-    train[col], uniques = pd.factorize(train[col])
-    test[col] = test[col].map({cat: idx for idx, cat in enumerate(uniques)}).fillna(-1).astype(int)
+for col in ['primaryTitle','directors', 'writers', 'titleType', 'genres']:
+    train.loc[:, col], uniques = pd.factorize(train[col])
+    test.loc[:, col] = test[col].map({cat: idx for idx, cat in enumerate(uniques)}).fillna(-1).astype(int)
 
-# Fill missing values and convert to float
-trainIns = train[features].fillna(0).astype(float)
-trainOuts = train[['averageRating']].fillna(0).astype(float)
-testIns = test[features].fillna(0).astype(float)
-testOuts = test[['averageRating']].fillna(0).astype(float)
+# Fill missing values
+for col in ['numVotes', 'startYear', 'runtimeMinutes']:
+    median = train[col].median()
+    train.loc[:, col] = train[col].fillna(median)
+    test.loc[:, col] = test[col].fillna(median)
+for col in ['directors', 'writers', 'titleType', 'genres']:
+    train.loc[:, col] = train[col].fillna(-1)
+    test.loc[:, col] = test[col].fillna(-1)
+
+# Feature scaling
+
+scaler = StandardScaler()
+train[features] = scaler.fit_transform(train[features])
+test[features] = scaler.transform(test[features])
+
+# Prepare inputs and outputs
+trainIns = train[features]
+trainOuts = train[['averageRating']].fillna(train['averageRating'].median())
+testIns = test[features]
+testOuts = test[['averageRating']].fillna(train['averageRating'].median())
+
 # Convert to tensors
 X_train = torch.tensor(trainIns.values, dtype=torch.float32)
 y_train = torch.tensor(trainOuts.values, dtype=torch.float32)
 X_test = torch.tensor(testIns.values, dtype=torch.float32)
 y_test = torch.tensor(testOuts.values, dtype=torch.float32)
 
-# Define model
+# Model!!!!!
 model = nn.Sequential(
-    nn.Linear(len(features), 16),
+    nn.Linear(len(features), 32),
+    nn.ReLU(),
+    nn.Linear(32, 16),
     nn.ReLU(),
     nn.Linear(16, 1)
 )
@@ -50,7 +62,7 @@ criterion = nn.MSELoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
 # Training loop
-epochs = 10
+epochs = 350
 for epoch in range(epochs):
     model.train()
     optimizer.zero_grad()
@@ -58,7 +70,8 @@ for epoch in range(epochs):
     loss = criterion(outputs, y_train)
     loss.backward()
     optimizer.step()
-    print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
+    if (epoch+1) % 5 == 0 or epoch == 0:
+        print(f"Epoch {epoch+1}/{epochs}, Loss: {loss.item():.4f}")
 
 # Evaluate
 model.eval()
