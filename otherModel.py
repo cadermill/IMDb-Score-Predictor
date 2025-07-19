@@ -4,7 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.metrics import mean_squared_error, r2_score
 
 titles = pd.read_csv('../data/cleanedTitles.csv')
-titles = titles.drop(columns=['writers'])
+titles = titles.dropna()
 
 categorical_features = ['titleType']
 titles = pd.get_dummies(titles, columns=categorical_features, drop_first=True)
@@ -13,7 +13,7 @@ for col in ['directors', 'genres']:
     titles[col], _ = pd.factorize(titles[col])
 
 #['tconst', 'averageRating', 'numVotes', 'directors', 'writers', 'titleType', 'primaryTitle', 'startYear', 'runtimeMinutes', 'genres']
-X = titles.drop(columns=['averageRating', 'tconst', 'numVotes', 'primaryTitle'])
+X = titles.drop(columns=['averageRating', 'tconst', 'numVotes', 'primaryTitle', 'writers'])
 Y = titles['averageRating']
 
 for col in X.columns:
