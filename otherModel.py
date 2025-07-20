@@ -9,18 +9,14 @@ titles = titles.dropna()
 categorical_features = ['titleType']
 titles = pd.get_dummies(titles, columns=categorical_features, drop_first=True)
 
-for col in ['directors', 'genres']:
+for col in ['directors', 'genres', 'writers']:
     titles[col], _ = pd.factorize(titles[col])
 
 #['tconst', 'averageRating', 'numVotes', 'directors', 'writers', 'titleType', 'primaryTitle', 'startYear', 'runtimeMinutes', 'genres']
-X = titles.drop(columns=['averageRating', 'tconst', 'numVotes', 'primaryTitle', 'writers'])
+X = titles.drop(columns=['averageRating', 'tconst', 'numVotes', 'primaryTitle'])
 Y = titles['averageRating']
 
-for col in X.columns:
-    if X[col].dtype.kind in 'biufc':  # numeric columns
-        X[col] = X[col].fillna(X[col].median())
-    else:  # categorical columns
-        X[col] = X[col].fillna(-1)
+print(X.head())
 
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 

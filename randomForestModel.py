@@ -5,12 +5,17 @@ from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.preprocessing import StandardScaler
 
 titles = pd.read_csv('../data/cleanedTitles.csv')
+titles = titles.dropna()
 
-features = ['numVotes', 'directors', 'titleType', 'startYear', 'runtimeMinutes', 'genres']
+features = ['numVotes', 'directors', 'titleType', 'startYear', 'runtimeMinutes', 'genres', 'writers']
 titles = titles[features + ['averageRating']].copy()
 
+# One-hot encode categorical columns
+categorical_features = ['titleType']
+titles = pd.get_dummies(titles, columns=categorical_features, drop_first=True)
+
 # Factorize all categorical columns
-for col in ['directors', 'titleType', 'genres']:
+for col in ['directors', 'genres', 'writers']:
     titles[col], _ = pd.factorize(titles[col])
 
 # Fill missing values
