@@ -44,6 +44,10 @@ def load_data():
         # save the cleaned data
         titles.to_csv('../data/cleanedTitles.csv', index=False)
 
+        # load names data for directors and writers conversion
+        names = pd.read_csv('../data/name.basics.tsv.gz', sep='\t', compression='gzip', low_memory=False, on_bad_lines='skip')
+        print(names.head())
+
         return titles
 
 titles = load_data()
